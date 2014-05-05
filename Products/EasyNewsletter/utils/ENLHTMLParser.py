@@ -3,7 +3,7 @@ import urlparse
 import urllib
 
 from Products.CMFCore.utils import getToolByName
-
+from Products.CMFPlone.utils import safe_unicode
 
 class ENLHTMLParser(HTMLParser.HTMLParser):
     """A simple parser which exchange relative URLs with absolute ones"""
@@ -11,7 +11,7 @@ class ENLHTMLParser(HTMLParser.HTMLParser):
     def __init__(self, context):
 
         self.context = context
-        self.html = ""
+        self.html = u""
         self.image_urls = []
         self.image_number = 0
 
@@ -20,7 +20,7 @@ class ENLHTMLParser(HTMLParser.HTMLParser):
     def handle_starttag(self, tag, attrs):
         """
         """
-        self.html += "<%s" % tag
+        self.html += u"<%s" % tag
 
 
         for attr in attrs:
@@ -45,54 +45,54 @@ class ENLHTMLParser(HTMLParser.HTMLParser):
                     plone_utils = getToolByName(self.context, 'plone_utils')
                     encoding = plone_utils.getSiteEncoding()
                     url = url.encode(encoding)
-                self.html += ' href="%s"' % url
+                self.html += u' href="%s"' % url
             else:
-                self.html += ' %s="%s"' % (attr)
+                self.html += u' %s="%s"' % (attr)
 
-        self.html += ">"
+        self.html += u">"
 
     def handle_endtag(self, tag):
         """
         """
-        self.html += "</%s>" % tag
+        self.html += u"</%s>" % tag
 
     def handle_data(self, data):
         """
         """
-        self.html += data
+        self.html += safe_unicode(data)
 
     def handle_charref(self, name):
-        self.html += "&#%s;" % name
+        self.html += u"&#%s;" % name
 
     def handle_entityref(self, name):
-        self.html += "&%s;" % name
+        self.html += u"&%s;" % name
 
     def handle_comment(self, data):
-        self.html += "<!--%s-->" % data
+        self.html += u"<!--%s-->" % data
 
     def handle_decl(self, decl):
-        self.html += "<!%s>" % decl
+        self.html += u"<!%s>" % decl
 
     def handle_startendtag(self, tag, attrs):
         """
         """
-        self.html += "<%s" % tag
+        self.html += u"<%s" % tag
         for attr in attrs:
-            if attr[0] == "src":
+            if attr[0] == u"src":
                 if attr[1].startswith(self.context.portal_url()):
-                    self.html += ' src="cid:image_%s"' % self.image_number
+                    self.html += u' src="cid:image_%s"' % self.image_number
                     self.image_number += 1
                     path = attr[1][len(self.context.portal_url()):]
                     path = '/'.join(self.context.getPhysicalPath()) + path
                     self.image_urls.append(path)
-                elif 'http' in attr[1]:
+                elif u'http' in attr[1]:
                     url = attr[1]
-                    self.html += ' src="%s"' % url
+                    self.html += u' src="%s"' % url
                 else:
-                    self.html += ' src="cid:image_%s"' % self.image_number
+                    self.html += u' src="cid:image_%s"' % self.image_number
                     self.image_number += 1
                     self.image_urls.append(attr[1])
             else:
-                self.html += ' %s="%s"' % (attr)
+                self.html += u' %s="%s"' % (attr)
 
-        self.html += " />"
+        self.html += u" />"
